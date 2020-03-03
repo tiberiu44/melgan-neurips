@@ -25,14 +25,14 @@ def WNConvTranspose1d(*args, **kwargs):
 
 class Audio2Mel(nn.Module):
     def __init__(
-        self,
-        n_fft=1024,
-        hop_length=256,
-        win_length=1024,
-        sampling_rate=22050,
-        n_mel_channels=80,
-        mel_fmin=0.0,
-        mel_fmax=None,
+            self,
+            n_fft=1024,
+            hop_length=256,
+            win_length=1024,
+            sampling_rate=16000,
+            n_mel_channels=80,
+            mel_fmin=0.0,
+            mel_fmax=7600,
     ):
         super().__init__()
         ##############################################
@@ -65,7 +65,11 @@ class Audio2Mel(nn.Module):
         real_part, imag_part = fft.unbind(-1)
         magnitude = torch.sqrt(real_part ** 2 + imag_part ** 2)
         mel_output = torch.matmul(self.mel_basis, magnitude)
-        log_mel_spec = torch.log10(torch.clamp(mel_output, min=1e-5))
+        tmp = 20 * torch.log10(torch.clamp(mel_output, min=1e-5)) - 20
+        log_mel_spec = torch.clamp((tmp + 100) / 100, 0, 1)
+        # log_mel_spec = torch.clamp((() - 20.0) + 100) / -100, 0, 1)
+        # from ipdb import set_trace
+        # set_trace()
         return log_mel_spec
 
 
